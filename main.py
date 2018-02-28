@@ -16,11 +16,17 @@ TARGET = "parallel"
 ITERATION_COUNT = 30
 
 
-@numba.vectorize(['boolean(complex128,complex128)'], target=TARGET)
+@numba.vectorize(['boolean(complex128,int32)'], target=TARGET)
 def mandelbrot(a, c):
     """
     Computes Zn = Zn-1 + C and see if it diverges
     """
+
+    i = c.real
+    x = i % WIDTH - HALF_WIDTH
+    y = np.floor(i/WIDTH) - HALF_HEIGHT
+
+    c = complex(x, y) / HALF_HEIGHT
 
     for i in range(ITERATION_COUNT):
         a = np.square(a) + c
@@ -28,16 +34,6 @@ def mandelbrot(a, c):
             return False
 
     return True
-
-
-@numba.vectorize(['complex128(complex128)'], target=TARGET)
-def f(i):
-    i = i.real
-
-    x = i % WIDTH - HALF_WIDTH
-    y = np.floor(i/WIDTH) - HALF_HEIGHT
-
-    return complex(x, y) / HALF_HEIGHT
 
 
 def createMandelbrotFractal():
@@ -51,9 +47,8 @@ def createMandelbrotFractal():
     startVal = np.zeros((HEIGHT, WIDTH), dtype=np.complex128)
 
     # Creates the constant array C in Zn = Zn-1*Zn-1 + C
-    c = np.arange(WIDTH*HEIGHT, dtype=np.complex128)
+    c = np.arange(WIDTH*HEIGHT, dtype=np.int32)
     c = np.reshape(c, (HEIGHT, WIDTH))
-    c = f(c)
 
     # Generates the fractal
     result = mandelbrot(startVal, c)
