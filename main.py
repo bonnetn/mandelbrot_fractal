@@ -16,15 +16,14 @@ TARGET = "parallel"
 ITERATION_COUNT = 30
 
 
-@numba.vectorize(['boolean(complex128,int32)'], target=TARGET)
-def mandelbrot(a, c):
+@numba.vectorize(['boolean(complex128,int64,int64)'], target=TARGET)
+def mandelbrot(a, x, y):
     """
     Computes Zn = Zn-1 + C and see if it diverges
     """
 
-    i = c.real
-    x = i % WIDTH - HALF_WIDTH
-    y = np.floor(i/WIDTH) - HALF_HEIGHT
+    x = x - HALF_WIDTH
+    y = y - HALF_HEIGHT
 
     c = complex(x, y) / HALF_HEIGHT
 
@@ -36,6 +35,7 @@ def mandelbrot(a, c):
     return True
 
 
+@profile
 def createMandelbrotFractal():
     """
     This function will create a png file of a mandelbrot fractal
@@ -47,11 +47,10 @@ def createMandelbrotFractal():
     startVal = np.zeros((HEIGHT, WIDTH), dtype=np.complex128)
 
     # Creates the constant array C in Zn = Zn-1*Zn-1 + C
-    c = np.arange(WIDTH*HEIGHT, dtype=np.int32)
-    c = np.reshape(c, (HEIGHT, WIDTH))
+    c = np.mgrid[0:HEIGHT, 0:WIDTH]
 
     # Generates the fractal
-    result = mandelbrot(startVal, c)
+    result = mandelbrot(startVal, c[0], c[1])
 
     t = np.floor((time.clock()-t)*1000)
     print("Generated mandelbrot fractal in {} ms".format(t))
