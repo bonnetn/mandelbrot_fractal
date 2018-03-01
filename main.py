@@ -44,7 +44,7 @@ def createMandelbrotFractal():
     c = np.mgrid[0:HEIGHT, 0:WIDTH]
 
     # Generates the fractal
-    result = mandelbrot(c[0], c[1])
+    result = mandelbrot(c[1], c[0])
 
     t = np.floor((time.clock()-t)*1000)
     print("Generated mandelbrot fractal in {} ms".format(t))
