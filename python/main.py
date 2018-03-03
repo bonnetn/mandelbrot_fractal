@@ -23,7 +23,7 @@ def mandelbrot(x, y):
     """
 
     a = complex(0, 0)
-    c = complex(x - HALF_WIDTH, y - HALF_HEIGHT) / HALF_HEIGHT
+    c = complex(x - HALF_WIDTH, y - HALF_HEIGHT) / HALF_HEIGHT * 2
 
     for i in range(ITERATION_COUNT):
         a = np.square(a) + c
