@@ -1,8 +1,8 @@
 CC = g++
-CFLAGS = -Wall
+CFLAGS = -Wall -O3
 EXEC_NAME = mandelbrot
 INCLUDES = 
-LIBS = 
+LIBS = -pthread
 OBJ_FILES = main.o lodepng/lodepng.o
 
 all : $(EXEC_NAME)
