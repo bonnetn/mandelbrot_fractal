@@ -14,7 +14,7 @@ changing the target).
 
 C++
 ---
-I decided to compare the performance of numba and native C++. I made a small C++
-code to see the speed difference, using multithreading. (unfortunatly I cannot 
-ry CUDA)
+I decided to compare the performance of *numba* and native C++. So I made a 
+small C++ code to see the speed difference, using multithreading. 
+(unfortunately I cannot try CUDA)
 
