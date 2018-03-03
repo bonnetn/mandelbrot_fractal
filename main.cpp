@@ -81,8 +81,8 @@ int main(void) {
         double x = j%WIDTH;
         double y = j/WIDTH;
 
-        auto coordX = (x-WIDTH/2 )/HEIGHT*2;
-        auto coordY = (y-HEIGHT/2 )/HEIGHT*2;
+        auto coordX = (x-WIDTH/2 )/HEIGHT*4;
+        auto coordY = (y-HEIGHT/2 )/HEIGHT*4;
 
         bits[j] = mandelbrot(coordX,coordY);
      
