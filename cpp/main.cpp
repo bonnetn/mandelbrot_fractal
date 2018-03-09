@@ -6,18 +6,14 @@
 
 
 
-#define WIDTH 1366
-#define HEIGHT 768
+#define WIDTH 400 // 1366
+#define HEIGHT 400 // 768
 #define MAX_ITERATION 30
 
 template<typename T>
 class Complex {
   public: 
     Complex(T const& a, T const& b) : m_real(a), m_imag(b) {}
-    Complex(Complex<T> const& a) {
-      m_real = a.getReal();
-      m_imag = a.getImag();
-    }
 
     void square(void) {
       // (a+bi)(a+bi) = a2 + 2abi - b2
@@ -81,8 +77,8 @@ int main(void) {
         double x = j%WIDTH;
         double y = j/WIDTH;
 
-        auto coordX = (x-WIDTH/2 )/HEIGHT*4;
-        auto coordY = (y-HEIGHT/2 )/HEIGHT*4;
+        auto coordX = (x-WIDTH/2 )/HEIGHT*2;
+        auto coordY = (y-HEIGHT/2 )/HEIGHT*2;
 
         bits[j] = mandelbrot(coordX,coordY);
      
