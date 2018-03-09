@@ -13,30 +13,30 @@
 namespace Complex {
   template<typename T>
   struct Complex {
-      Complex(T const& a, T const& b) : m_real(a), m_imag(b) {}
+      Complex(T const& a, T const& b) : real(a), imag(b) {}
 
-      T m_real;
-      T m_imag;
+      T real;
+      T imag;
   };
 
   template<typename T>
   void square( Complex<T>& a ) {
     // (a+bi)(a+bi) = a2 + 2abi - b2
-    const T temp = a.m_imag;
-    a.m_imag = 2 * a.m_imag * a.m_real;
-    a.m_real = a.m_real*a.m_real - temp * temp;
+    const T temp = a.imag;
+    a.imag = 2 * a.imag * a.real;
+    a.real = a.real*a.real - temp * temp;
   }
 
   template<typename T>
   Complex<T>& operator+=( Complex<T>& a, Complex<T> const& b ) {
-      a.m_real += b.m_real;
-      a.m_imag += b.m_imag;
+      a.real += b.real;
+      a.imag += b.imag;
       return a;
   }
 
   template<typename T>
   T norm2(Complex<T> const& z) {
-    return z.m_imag*z.m_imag + z.m_real*z.m_real;
+    return z.imag*z.imag + z.real*z.real;
   }
 }
 
