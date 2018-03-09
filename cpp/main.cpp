@@ -10,40 +10,42 @@
 #define HEIGHT 400 // 768
 #define MAX_ITERATION 30
 
-template<typename T>
-struct Complex {
-    Complex(T const& a, T const& b) : m_real(a), m_imag(b) {}
+namespace Complex {
+  template<typename T>
+  struct Complex {
+      Complex(T const& a, T const& b) : m_real(a), m_imag(b) {}
 
-    void square(void) {
-      // (a+bi)(a+bi) = a2 + 2abi - b2
-      const T temp = m_imag;
-      m_imag = 2 * m_imag * m_real;
-      m_real = m_real*m_real - temp * temp;
-    }
+      void square(void) {
+        // (a+bi)(a+bi) = a2 + 2abi - b2
+        const T temp = m_imag;
+        m_imag = 2 * m_imag * m_real;
+        m_real = m_real*m_real - temp * temp;
+      }
 
-    void add(Complex<T> const& c) {
-      m_real += c.m_real;
-      m_imag += c.m_imag;
-    }
+      void add(Complex<T> const& c) {
+        m_real += c.m_real;
+        m_imag += c.m_imag;
+      }
 
     T norm2() const {
       return m_imag*m_imag + m_real*m_real;
     }
+      T m_real;
+      T m_imag;
+  };
 
-    T m_real;
-    T m_imag;
-};
+}
 
 template<typename T>
 bool mandelbrot(T const& c_real, T const& c_imag) {
 
-  const Complex<T> c(c_real, c_imag);
-  Complex<T> z(c);
+  const Complex::Complex<T> c(c_real, c_imag);
+  Complex::Complex<T> z(c);
 
   for(auto i=0; i<MAX_ITERATION; i++) {
     z.square();
     z.add(c);
-    if(z.norm2() > 4)
+    if(Complex::norm2(z) > 4)
       return true; 
   }
   return false;
