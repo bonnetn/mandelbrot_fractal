@@ -15,16 +15,17 @@ namespace Complex {
   struct Complex {
       Complex(T const& a, T const& b) : m_real(a), m_imag(b) {}
 
-      void square(void) {
-        // (a+bi)(a+bi) = a2 + 2abi - b2
-        const T temp = m_imag;
-        m_imag = 2 * m_imag * m_real;
-        m_real = m_real*m_real - temp * temp;
-      }
-
       T m_real;
       T m_imag;
   };
+
+  template<typename T>
+  void square( Complex<T>& a ) {
+    // (a+bi)(a+bi) = a2 + 2abi - b2
+    const T temp = a.m_imag;
+    a.m_imag = 2 * a.m_imag * a.m_real;
+    a.m_real = a.m_real*a.m_real - temp * temp;
+  }
 
   template<typename T>
   Complex<T>& operator+=( Complex<T>& a, Complex<T> const& b ) {
@@ -46,7 +47,7 @@ bool mandelbrot(T const& c_real, T const& c_imag) {
   Complex::Complex<T> z(c);
 
   for(auto i=0; i<MAX_ITERATION; i++) {
-    z.square();
+    Complex::square(z);
     z += c;
     if(Complex::norm2(z) > 4)
       return true; 
