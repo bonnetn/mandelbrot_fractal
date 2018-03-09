@@ -27,13 +27,14 @@ namespace Complex {
         m_imag += c.m_imag;
       }
 
-    T norm2() const {
-      return m_imag*m_imag + m_real*m_real;
-    }
       T m_real;
       T m_imag;
   };
 
+  template<typename T>
+  T norm2(Complex<T> const& z) {
+    return z.m_imag*z.m_imag + z.m_real*z.m_real;
+  }
 }
 
 template<typename T>
