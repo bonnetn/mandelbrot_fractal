@@ -11,8 +11,7 @@
 #define MAX_ITERATION 30
 
 template<typename T>
-class Complex {
-  public: 
+struct Complex {
     Complex(T const& a, T const& b) : m_real(a), m_imag(b) {}
 
     void square(void) {
@@ -23,23 +22,14 @@ class Complex {
     }
 
     void add(Complex<T> const& c) {
-      m_real += c.getReal();
-      m_imag += c.getImag();
-    }
-
-    T getReal() const {
-      return m_real;
-    }
-
-    T getImag() const {
-      return m_imag;
+      m_real += c.m_real;
+      m_imag += c.m_imag;
     }
 
     T norm2() const {
       return m_imag*m_imag + m_real*m_real;
     }
 
-  private:
     T m_real;
     T m_imag;
 };
