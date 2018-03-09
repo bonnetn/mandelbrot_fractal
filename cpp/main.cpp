@@ -22,14 +22,16 @@ namespace Complex {
         m_real = m_real*m_real - temp * temp;
       }
 
-      void add(Complex<T> const& c) {
-        m_real += c.m_real;
-        m_imag += c.m_imag;
-      }
-
       T m_real;
       T m_imag;
   };
+
+  template<typename T>
+  Complex<T>& operator+=( Complex<T>& a, Complex<T> const& b ) {
+      a.m_real += b.m_real;
+      a.m_imag += b.m_imag;
+      return a;
+  }
 
   template<typename T>
   T norm2(Complex<T> const& z) {
@@ -45,7 +47,7 @@ bool mandelbrot(T const& c_real, T const& c_imag) {
 
   for(auto i=0; i<MAX_ITERATION; i++) {
     z.square();
-    z.add(c);
+    z += c;
     if(Complex::norm2(z) > 4)
       return true; 
   }
