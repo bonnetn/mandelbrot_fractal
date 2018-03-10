@@ -58,11 +58,11 @@ bool mandelbrot(T const& c_real, T const& c_imag) {
 
 int main(void) {
 
-  auto startTime = std::clock();
+  const auto startTime = std::clock();
 
-  auto CELL_COUNT = WIDTH*HEIGHT;
-  auto THREAD_COUNT = static_cast<int>(std::thread::hardware_concurrency());
-  auto SLICE = static_cast<int>(std::ceil(CELL_COUNT/THREAD_COUNT));
+  const auto CELL_COUNT = WIDTH*HEIGHT;
+  const auto THREAD_COUNT = static_cast<int>(std::thread::hardware_concurrency());
+  const auto SLICE = static_cast<int>(std::ceil(CELL_COUNT/THREAD_COUNT));
 
   std::vector<std::thread> threads(THREAD_COUNT);
   std::vector<bool> bits(CELL_COUNT);
@@ -71,11 +71,11 @@ int main(void) {
     threads[threadIndex] = std::thread( [&bits](int min, int max) {
       for(auto j=min; j<max; j++) {
 
-        auto x = j%WIDTH;
-        auto y = j/WIDTH;
+        const auto x = j%WIDTH;
+        const auto y = j/WIDTH;
 
-        auto coordX = (static_cast<double>(x)-WIDTH/2 )/HEIGHT*2;
-        auto coordY = (static_cast<double>(y)-HEIGHT/2 )/HEIGHT*2;
+        const auto coordX = (static_cast<double>(x)-WIDTH/2 )/HEIGHT*2;
+        const auto coordY = (static_cast<double>(y)-HEIGHT/2 )/HEIGHT*2;
 
         bits[j] = mandelbrot(coordX,coordY);
      
@@ -93,13 +93,13 @@ int main(void) {
   std::vector<unsigned char> pixels(sizeof(unsigned char) * 4 * CELL_COUNT);
 
   for(auto i(0); i<CELL_COUNT; i++) {
-    unsigned char val = bits[i] ? 0 : 255;
+    const unsigned char val = bits[i] ? 0 : 255;
     pixels[4 * i + 0]  = val;
     pixels[4 * i + 1]  = val;
     pixels[4 * i + 2]  = val;
     pixels[4 * i + 3]  = 255;
   }
-  auto error = lodepng::encode("mandelbrot.png", pixels, WIDTH, HEIGHT);
+  const auto error = lodepng::encode("mandelbrot.png", pixels, WIDTH, HEIGHT);
 
   // if there's an error, display it
   if(error) 
