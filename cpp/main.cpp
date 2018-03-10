@@ -7,7 +7,6 @@
 
 constexpr int width = 400; // 1366
 constexpr int height = 400; // 768
-constexpr int max_iteration = 30;
 
 namespace Complex {
   template<typename T>
@@ -41,7 +40,7 @@ namespace Complex {
 }
 
 template<typename T>
-bool mandelbrot(T const& c_real, T const& c_imag) {
+bool mandelbrot(T const& c_real, T const& c_imag, const int max_iteration=30) {
 
   const Complex::Complex<T> c(c_real, c_imag);
   Complex::Complex<T> z(c);
