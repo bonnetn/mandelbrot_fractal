@@ -60,45 +60,53 @@ int main(void) {
 
   const auto startTime = std::clock();
 
-  const auto CELL_COUNT = WIDTH*HEIGHT;
-  const auto THREAD_COUNT = static_cast<int>(std::thread::hardware_concurrency());
-  const auto SLICE = static_cast<int>(std::ceil(CELL_COUNT/THREAD_COUNT));
+  const auto bits = [&]() {
 
-  std::vector<std::thread> threads(THREAD_COUNT);
-  std::vector<bool> bits(CELL_COUNT);
+    const auto CELL_COUNT = WIDTH*HEIGHT;
+    const auto THREAD_COUNT = static_cast<int>(std::thread::hardware_concurrency());
+    const auto SLICE = static_cast<int>(std::ceil(CELL_COUNT/THREAD_COUNT));
 
-  for(auto threadIndex=0; threadIndex < THREAD_COUNT; threadIndex++) {
-    threads[threadIndex] = std::thread( [&bits](int min, int max) {
-      for(auto j=min; j<max; j++) {
+    std::vector<bool> bits(CELL_COUNT);
+    std::vector<std::thread> threads(THREAD_COUNT);
 
-        const auto x = j%WIDTH;
-        const auto y = j/WIDTH;
+    for(auto threadIndex=0; threadIndex < THREAD_COUNT; threadIndex++) {
+      threads[threadIndex] = std::thread( [&bits](int min, int max) {
+        for(auto j=min; j<max; j++) {
 
-        const auto coordX = (static_cast<double>(x)-WIDTH/2 )/HEIGHT*2;
-        const auto coordY = (static_cast<double>(y)-HEIGHT/2 )/HEIGHT*2;
+          const auto x = j%WIDTH;
+          const auto y = j/WIDTH;
 
-        bits[j] = mandelbrot(coordX,coordY);
-     
-      }
-    }, threadIndex*SLICE, std::min(SLICE*(threadIndex+1), CELL_COUNT));
-  }
+          const auto coordX = (static_cast<double>(x)-WIDTH/2 )/HEIGHT*2;
+          const auto coordY = (static_cast<double>(y)-HEIGHT/2 )/HEIGHT*2;
 
-  for( auto & t : threads ) {
-    t.join();
-  }
+          bits[j] = mandelbrot(coordX,coordY);
+       
+        }
+      }, threadIndex*SLICE, std::min(SLICE*(threadIndex+1), CELL_COUNT));
+    }
+
+    for( auto & t : threads ) {
+      t.join();
+    }
+    return bits;
+  }();
 
 
   std::cout << "Time: " << (std::clock()-startTime) * (static_cast<double>(1000) / CLOCKS_PER_SEC) << "ms" << std::endl;
-  // Encode the image
-  std::vector<unsigned char> pixels(sizeof(unsigned char) * 4 * CELL_COUNT);
+  
+  const auto pixels = [&]() {
+    std::vector<unsigned char> pixels(4 * bits.size());
 
-  for(auto i(0); i<CELL_COUNT; i++) {
-    const unsigned char val = bits[i] ? 0 : 255;
-    pixels[4 * i + 0]  = val;
-    pixels[4 * i + 1]  = val;
-    pixels[4 * i + 2]  = val;
-    pixels[4 * i + 3]  = 255;
-  }
+    for(decltype(bits)::size_type i(0); i<bits.size(); i++) {
+      const unsigned char val = bits[i] ? 0 : 255;
+      pixels[4 * i + 0]  = val;
+      pixels[4 * i + 1]  = val;
+      pixels[4 * i + 2]  = val;
+      pixels[4 * i + 3]  = 255;
+    }
+
+    return pixels;
+  }();
   const auto error = lodepng::encode("mandelbrot.png", pixels, WIDTH, HEIGHT);
 
   // if there's an error, display it
