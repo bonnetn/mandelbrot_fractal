@@ -60,9 +60,9 @@ int main(void) {
 
   auto startTime = std::clock();
 
-  int THREAD_COUNT = std::thread::hardware_concurrency();
-  int CELL_COUNT = WIDTH*HEIGHT;
-  int SLICE = std::ceil(CELL_COUNT/THREAD_COUNT);
+  auto CELL_COUNT = WIDTH*HEIGHT;
+  auto THREAD_COUNT = static_cast<int>(std::thread::hardware_concurrency());
+  auto SLICE = static_cast<int>(std::ceil(CELL_COUNT/THREAD_COUNT));
 
   std::vector<std::thread> threads(THREAD_COUNT);
   std::vector<bool> bits(CELL_COUNT);
@@ -71,11 +71,11 @@ int main(void) {
     threads[threadIndex] = std::thread( [&bits](int min, int max) {
       for(auto j=min; j<max; j++) {
 
-        double x = j%WIDTH;
-        double y = j/WIDTH;
+        auto x = j%WIDTH;
+        auto y = j/WIDTH;
 
-        auto coordX = (x-WIDTH/2 )/HEIGHT*2;
-        auto coordY = (y-HEIGHT/2 )/HEIGHT*2;
+        auto coordX = (static_cast<double>(x)-WIDTH/2 )/HEIGHT*2;
+        auto coordY = (static_cast<double>(y)-HEIGHT/2 )/HEIGHT*2;
 
         bits[j] = mandelbrot(coordX,coordY);
      
@@ -88,7 +88,7 @@ int main(void) {
   }
 
 
-  std::cout << "Time: " << (std::clock()-startTime) * ((double) 1000 / CLOCKS_PER_SEC) << "ms" << std::endl;
+  std::cout << "Time: " << (std::clock()-startTime) * (static_cast<double>(1000) / CLOCKS_PER_SEC) << "ms" << std::endl;
   // Encode the image
   std::vector<unsigned char> pixels(sizeof(unsigned char) * 4 * CELL_COUNT);
 
