@@ -5,10 +5,9 @@
 #include <cmath>
 
 
-
-#define WIDTH 400 // 1366
-#define HEIGHT 400 // 768
-#define MAX_ITERATION 30
+constexpr int width = 400; // 1366
+constexpr int height = 400; // 768
+constexpr int max_iteration = 30;
 
 namespace Complex {
   template<typename T>
@@ -47,7 +46,7 @@ bool mandelbrot(T const& c_real, T const& c_imag) {
   const Complex::Complex<T> c(c_real, c_imag);
   Complex::Complex<T> z(c);
 
-  for(auto i=0; i<MAX_ITERATION; i++) {
+  for(auto i=0; i<max_iteration; i++) {
     Complex::square(z);
     z += c;
     if(Complex::norm2(z) > 4)
@@ -58,31 +57,32 @@ bool mandelbrot(T const& c_real, T const& c_imag) {
 
 int main(void) {
 
+
   const auto startTime = std::clock();
 
   const auto bits = [&]() {
 
-    const auto CELL_COUNT = WIDTH*HEIGHT;
-    const auto THREAD_COUNT = static_cast<int>(std::thread::hardware_concurrency());
-    const auto SLICE = static_cast<int>(std::ceil(CELL_COUNT/THREAD_COUNT));
+    const auto cell_count = width*height;
+    const auto thread_count = static_cast<int>(std::thread::hardware_concurrency());
+    const auto slice = static_cast<int>(std::ceil(cell_count/thread_count));
 
-    std::vector<bool> bits(CELL_COUNT);
-    std::vector<std::thread> threads(THREAD_COUNT);
+    std::vector<bool> bits(cell_count);
+    std::vector<std::thread> threads(thread_count);
 
-    for(auto threadIndex=0; threadIndex < THREAD_COUNT; threadIndex++) {
+    for(auto threadIndex=0; threadIndex < thread_count; threadIndex++) {
       threads[threadIndex] = std::thread( [&bits](int min, int max) {
         for(auto j=min; j<max; j++) {
 
-          const auto x = j%WIDTH;
-          const auto y = j/WIDTH;
+          const auto x = j%width;
+          const auto y = j/width;
 
-          const auto coordX = (static_cast<double>(x)-WIDTH/2 )/HEIGHT*2;
-          const auto coordY = (static_cast<double>(y)-HEIGHT/2 )/HEIGHT*2;
+          const auto coordX = (static_cast<double>(x)-width/2 )/height*2;
+          const auto coordY = (static_cast<double>(y)-height/2 )/height*2;
 
           bits[j] = mandelbrot(coordX,coordY);
        
         }
-      }, threadIndex*SLICE, std::min(SLICE*(threadIndex+1), CELL_COUNT));
+      }, threadIndex*slice, std::min(slice*(threadIndex+1), cell_count));
     }
 
     for( auto & t : threads ) {
@@ -107,7 +107,7 @@ int main(void) {
 
     return pixels;
   }();
-  const auto error = lodepng::encode("mandelbrot.png", pixels, WIDTH, HEIGHT);
+  const auto error = lodepng::encode("mandelbrot.png", pixels, width, height);
 
   // if there's an error, display it
   if(error) 
