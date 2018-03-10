@@ -5,8 +5,6 @@
 #include <cmath>
 
 
-constexpr int width = 400; // 1366
-constexpr int height = 400; // 768
 
 namespace Complex {
   template<typename T>
@@ -39,28 +37,23 @@ namespace Complex {
   }
 }
 
-template<typename T>
-bool mandelbrot(T const& c_real, T const& c_imag, const int max_iteration=30) {
+namespace Mandelbrot {
+  template<typename T>
+  bool mandelbrot(T const& c_real, T const& c_imag, const int max_iteration=30) {
 
-  const Complex::Complex<T> c(c_real, c_imag);
-  Complex::Complex<T> z(c);
+    const Complex::Complex<T> c(c_real, c_imag);
+    Complex::Complex<T> z(c);
 
-  for(auto i=0; i<max_iteration; i++) {
-    Complex::square(z);
-    z += c;
-    if(Complex::norm2(z) > 4)
-      return true; 
+    for(auto i=0; i!=max_iteration; i++) {
+      Complex::square(z);
+      z += c;
+      if(Complex::norm2(z) > 4)
+        return true; 
+    }
+    return false;
   }
-  return false;
-}
 
-int main(void) {
-
-
-  const auto startTime = std::clock();
-
-  const auto bits = [&]() {
-
+  auto generate_picture(int width, int height) {
     const auto cell_count = width*height;
     const auto thread_count = static_cast<int>(std::thread::hardware_concurrency());
     const auto slice = static_cast<int>(std::ceil(cell_count/thread_count));
@@ -69,7 +62,7 @@ int main(void) {
     std::vector<std::thread> threads(thread_count);
 
     for(auto threadIndex=0; threadIndex < thread_count; threadIndex++) {
-      threads[threadIndex] = std::thread( [&bits](int min, int max) {
+      threads[threadIndex] = std::thread( [&bits,width,height](int min, int max) {
         for(auto j=min; j<max; j++) {
 
           const auto x = j%width;
@@ -88,30 +81,32 @@ int main(void) {
       t.join();
     }
     return bits;
-  }();
+  }
 
+}
 
+int main(void) {
+
+  constexpr int width = 400; // 1366
+  constexpr int height = 400; // 768
+
+  const auto startTime = std::clock();
+  const auto bits = Mandelbrot::generate_picture(width, height);
   std::cout << "Time: " << (std::clock()-startTime) * (static_cast<double>(1000) / CLOCKS_PER_SEC) << "ms" << std::endl;
   
-  const auto pixels = [&]() {
-    std::vector<unsigned char> pixels(4 * bits.size());
+  const auto pixels = [&bits]() {
+    std::vector<unsigned char> pixels;
+    pixels.reserve(4 * bits.size());
 
-    for(decltype(bits)::size_type i(0); i<bits.size(); i++) {
-      const unsigned char val = bits[i] ? 0 : 255;
-      pixels[4 * i + 0]  = val;
-      pixels[4 * i + 1]  = val;
-      pixels[4 * i + 2]  = val;
-      pixels[4 * i + 3]  = 255;
+    for(auto b : bits) {
+      const unsigned char pxValue = b ? 0 : 255;
+      std::vector<unsigned char> px{pxValue,pxValue,pxValue,255};
+      pixels.insert(end(pixels), begin(px), end(px));
     }
 
     return pixels;
   }();
-  const auto error = lodepng::encode("mandelbrot.png", pixels, width, height);
 
-  // if there's an error, display it
-  if(error) 
-    std::cout << "encoder error " << error << ": "<< lodepng_error_text(error) << std::endl;
-
-
+  lodepng::encode("mandelbrot.png", pixels, width, height);
 
 }
