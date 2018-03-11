@@ -9,7 +9,7 @@
 namespace Complex {
   template<typename T>
   struct Complex {
-      Complex(T const& a, T const& b) : real(a), imag(b) {}
+      Complex(const T& a, const T& b) : real(a), imag(b) {}
       Complex() = default;
 
       T real = 0;
@@ -87,8 +87,8 @@ namespace Mandelbrot {
 
 int main(void) {
 
-  constexpr int width = 400; // 1366
-  constexpr int height = 400; // 768
+  constexpr int width = 1366;
+  constexpr int height = 768;
 
   const auto startTime = std::clock();
   const auto bits = Mandelbrot::generate_picture(width, height);
