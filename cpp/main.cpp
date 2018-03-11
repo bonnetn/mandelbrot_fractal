@@ -4,6 +4,7 @@
 #include <thread>
 #include <cmath>
 #include "complex.hpp"
+#include "threadpool.hpp"
 
 
 namespace mandelbrot {
@@ -59,6 +60,8 @@ int main() {
   constexpr int width = 1366;
   constexpr int height = 768;
 
+  ThreadPool tp;
+
   const auto startTime = std::clock();
   const auto bits = mandelbrot::generate_picture(width, height);
   std::cout << "Time: " << (std::clock()-startTime) * (static_cast<double>(1000) / CLOCKS_PER_SEC) << "ms" << std::endl;
@@ -77,6 +80,5 @@ int main() {
   }();
 
   lodepng::encode("mandelbrot.png", pixels, width, height);
-  return 0;
 
 }
