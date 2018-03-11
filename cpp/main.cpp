@@ -3,51 +3,20 @@
 #include "lodepng/lodepng.h"
 #include <thread>
 #include <cmath>
+#include "complex.hpp"
 
 
-
-namespace Complex {
-  template<typename T>
-  struct Complex {
-      Complex(const T& a, const T& b) : real{a}, imag{b} {}
-      Complex() = default;
-
-      T real{0};
-      T imag{0};
-
-      auto& operator+=(const Complex<T> &b) {
-          real += b.real;
-          imag += b.imag;
-          return *this;
-      }
-  };
-
-  template<typename T>
-  void square(Complex<T> &a) {
-    // (a+bi)(a+bi) = a2 + 2abi - b2
-    const T temp = a.imag;
-    a.imag = 2 * a.imag * a.real;
-    a.real = a.real*a.real - temp * temp;
-  }
-
-
-  template<typename T>
-  auto norm2(const Complex<T> &z) {
-    return z.imag*z.imag + z.real*z.real;
-  }
-}
-
-namespace Mandelbrot {
+namespace mandelbrot {
   template<typename T>
   bool mandelbrot(const T &c_real, const T &c_imag, const int max_iteration=30) {
 
-    const Complex::Complex<T> c{c_real, c_imag};
-    Complex::Complex<T> z{c};
+    const complex::Complex<T> c{c_real, c_imag};
+    complex::Complex<T> z{c};
 
     for(auto i=0; i!=max_iteration; i++) {
-      Complex::square(z);
+      complex::square(z);
       z += c;
-      if(Complex::norm2(z) > 4)
+      if(complex::norm2(z) > 4)
         return true; 
     }
     return false;
@@ -91,7 +60,7 @@ int main() {
   constexpr int height = 768;
 
   const auto startTime = std::clock();
-  const auto bits = Mandelbrot::generate_picture(width, height);
+  const auto bits = mandelbrot::generate_picture(width, height);
   std::cout << "Time: " << (std::clock()-startTime) * (static_cast<double>(1000) / CLOCKS_PER_SEC) << "ms" << std::endl;
   
   const auto pixels = [&bits]() {
