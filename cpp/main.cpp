@@ -23,16 +23,18 @@ namespace mandelbrot {
     return false;
   }
 
-  std::vector<bool> generate_picture(int width, int height) {
+  std::vector<bool> generate_picture(int width, int height)
+  {
+    constexpr auto chunk_size = 16;
     const auto cell_count = width*height;
-    const auto thread_count = static_cast<int>(std::thread::hardware_concurrency());
-    const auto slice = static_cast<int>(std::ceil(cell_count/thread_count));
+    ThreadPool tp{std::thread::hardware_concurrency()};
 
     std::vector<bool> bits(cell_count);
-    std::vector<std::thread> threads(thread_count);
 
-    for(auto threadIndex=0; threadIndex < thread_count; threadIndex++) {
-      threads[threadIndex] = std::thread{ [&bits,width,height](int min, int max) {
+    for(auto i{0}; i<cell_count/chunk_size; i++) {
+      auto min = chunk_size*i;
+      auto max = std::max(chunk_size*(i+1), cell_count-1);
+      tp.addTask( [min,max,width,height,&bits]() {
         for(auto j=min; j<max; j++) {
 
           const auto x = j%width;
@@ -42,14 +44,10 @@ namespace mandelbrot {
           const auto coordY = (static_cast<double>(y)-height/2 )/height*2;
 
           bits[j] = mandelbrot(coordX,coordY);
-       
         }
-      }, threadIndex*slice, std::min(slice*(threadIndex+1), cell_count)};
+      });
     }
 
-    for( auto & t : threads ) {
-      t.join();
-    }
     return bits;
   }
 
@@ -59,8 +57,6 @@ int main() {
 
   constexpr int width = 1366;
   constexpr int height = 768;
-
-  ThreadPool tp;
 
   const auto startTime = std::clock();
   const auto bits = mandelbrot::generate_picture(width, height);
