@@ -53,7 +53,7 @@ namespace Mandelbrot {
     return false;
   }
 
-  auto generate_picture(int width, int height) {
+  std::vector<bool> generate_picture(int width, int height) {
     const auto cell_count = width*height;
     const auto thread_count = static_cast<int>(std::thread::hardware_concurrency());
     const auto slice = static_cast<int>(std::ceil(cell_count/thread_count));
