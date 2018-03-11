@@ -39,7 +39,7 @@ namespace Complex {
 
 namespace Mandelbrot {
   template<typename T>
-  bool mandelbrot(T const& c_real, T const& c_imag, const int max_iteration=30) {
+  bool mandelbrot(const T &c_real, const T &c_imag, const int max_iteration=30) {
 
     const Complex::Complex<T> c{c_real, c_imag};
     Complex::Complex<T> z{c};
