@@ -108,5 +108,6 @@ int main() {
   }();
 
   lodepng::encode("mandelbrot.png", pixels, width, height);
+  return 0;
 
 }
