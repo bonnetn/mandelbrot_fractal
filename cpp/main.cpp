@@ -27,7 +27,7 @@ namespace mandelbrot {
 
   std::vector<bool> generate_picture(int width, int height)
   {
-    constexpr auto chunk_size = 1<<12;
+    constexpr auto chunk_size = 1<<9;
     const auto cell_count = width*height;
     ThreadPool tp{std::thread::hardware_concurrency()};
 
