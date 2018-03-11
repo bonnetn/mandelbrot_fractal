@@ -85,7 +85,7 @@ namespace Mandelbrot {
 
 }
 
-int main(void) {
+int main() {
 
   constexpr int width = 1366;
   constexpr int height = 768;
