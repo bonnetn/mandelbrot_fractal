@@ -14,22 +14,22 @@ namespace Complex {
 
       T real{0};
       T imag{0};
+
+      auto& operator+=( const Complex<T> &b ) {
+          real += b.real;
+          imag += b.imag;
+          return *this;
+      }
   };
 
   template<typename T>
-  auto square( Complex<T>& a ) {
+  void square( Complex<T>& a ) {
     // (a+bi)(a+bi) = a2 + 2abi - b2
     const T temp = a.imag;
     a.imag = 2 * a.imag * a.real;
     a.real = a.real*a.real - temp * temp;
   }
 
-  template<typename T>
-  auto& operator+=( Complex<T>& a, Complex<T> const& b ) {
-      a.real += b.real;
-      a.imag += b.imag;
-      return a;
-  }
 
   template<typename T>
   auto norm2(Complex<T> const& z) {
