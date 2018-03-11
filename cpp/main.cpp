@@ -9,11 +9,11 @@
 namespace Complex {
   template<typename T>
   struct Complex {
-      Complex(const T& a, const T& b) : real(a), imag(b) {}
+      Complex(const T& a, const T& b) : real{a}, imag{b} {}
       Complex() = default;
 
-      T real = 0;
-      T imag = 0;
+      T real{0};
+      T imag{0};
   };
 
   template<typename T>
@@ -41,8 +41,8 @@ namespace Mandelbrot {
   template<typename T>
   bool mandelbrot(T const& c_real, T const& c_imag, const int max_iteration=30) {
 
-    const Complex::Complex<T> c(c_real, c_imag);
-    Complex::Complex<T> z(c);
+    const Complex::Complex<T> c{c_real, c_imag};
+    Complex::Complex<T> z{c};
 
     for(auto i=0; i!=max_iteration; i++) {
       Complex::square(z);
@@ -62,7 +62,7 @@ namespace Mandelbrot {
     std::vector<std::thread> threads(thread_count);
 
     for(auto threadIndex=0; threadIndex < thread_count; threadIndex++) {
-      threads[threadIndex] = std::thread( [&bits,width,height](int min, int max) {
+      threads[threadIndex] = std::thread{ [&bits,width,height](int min, int max) {
         for(auto j=min; j<max; j++) {
 
           const auto x = j%width;
@@ -74,7 +74,7 @@ namespace Mandelbrot {
           bits[j] = mandelbrot(coordX,coordY);
        
         }
-      }, threadIndex*slice, std::min(slice*(threadIndex+1), cell_count));
+      }, threadIndex*slice, std::min(slice*(threadIndex+1), cell_count)};
     }
 
     for( auto & t : threads ) {
