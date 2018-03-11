@@ -23,18 +23,24 @@ namespace mandelbrot {
     return false;
   }
 
+
+
   std::vector<bool> generate_picture(int width, int height)
   {
-    constexpr auto chunk_size = 16;
+    constexpr auto chunk_size = 1<<12;
     const auto cell_count = width*height;
     ThreadPool tp{std::thread::hardware_concurrency()};
 
     std::vector<bool> bits(cell_count);
+    std::condition_variable cv;
+    std::mutex mutex;
+    auto tasksCompleted{0};
+    auto chunk_count = cell_count/chunk_size+1;
 
-    for(auto i{0}; i<cell_count/chunk_size; i++) {
+    for(auto i{0}; i<chunk_count; i++) {
       auto min = chunk_size*i;
-      auto max = std::max(chunk_size*(i+1), cell_count-1);
-      tp.addTask( [min,max,width,height,&bits]() {
+      auto max = std::min(chunk_size*(i+1), cell_count-1);
+      tp.addTask( [&,min,max]() {
         for(auto j=min; j<max; j++) {
 
           const auto x = j%width;
@@ -45,7 +51,20 @@ namespace mandelbrot {
 
           bits[j] = mandelbrot(coordX,coordY);
         }
+        {
+          std::unique_lock<std::mutex> lock(mutex);
+          tasksCompleted++;
+          if(tasksCompleted == chunk_count)
+            cv.notify_all();
+        }
       });
+    }
+
+    {
+      std::unique_lock<std::mutex> lock(mutex);
+      while(tasksCompleted != chunk_count) {
+        cv.wait(lock);
+      }
     }
 
     return bits;
