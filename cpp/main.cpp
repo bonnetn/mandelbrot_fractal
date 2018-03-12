@@ -7,9 +7,14 @@
 #include "threadpool.hpp"
 
 
-namespace mandelbrot {
+class MandelbrotGenerator {
+  public:
+  virtual std::vector<bool> generate_picture() = 0;
+};
+
+namespace Impl {
   template<typename T>
-  bool mandelbrot(const T &c_real, const T &c_imag, const int max_iteration=30) {
+  bool mandelbrot(const T &c_real, const T &c_imag, const int max_iteration=60) {
 
     const complex::Complex<T> c{c_real, c_imag};
     complex::Complex<T> z{c};
@@ -23,39 +28,55 @@ namespace mandelbrot {
     return false;
   }
 
+  class MandelbrotGenerator : public ::MandelbrotGenerator {
 
-
-  std::vector<bool> generate_picture(int width, int height)
-  {
-    constexpr auto chunk_size = 1<<9;
-    const auto cell_count = width*height;
-    ThreadPool tp{std::thread::hardware_concurrency()};
-
-    std::vector<bool> bits(cell_count);
-    auto chunk_count = cell_count/chunk_size+1;
-
-    for(auto i{0}; i<chunk_count; i++) {
-      auto min = chunk_size*i;
-      auto max = std::min(chunk_size*(i+1), cell_count-1);
-      tp.addTask( [&,min,max]() {
+    private:
+    auto generateMandelbrotSlice(size_t min, size_t max)
+    {
+      return [&,min,max]() {
         for(auto j=min; j<max; j++) {
 
-          const auto x = j%width;
-          const auto y = j/width;
+          const auto x = j%m_width;
+          const auto y = j/m_width;
 
-          const auto coordX = (static_cast<double>(x)-width/2 )/height*2;
-          const auto coordY = (static_cast<double>(y)-height/2 )/height*2;
+          const auto coordX = (static_cast<double>(x)-m_width/2 )/m_height*2;
+          const auto coordY = (static_cast<double>(y)-m_height/2 )/m_height*2;
 
-          bits[j] = mandelbrot(coordX,coordY);
+          m_bits[j] = mandelbrot(coordX,coordY);
         }
-      });
+      };
     }
 
-    tp.waitForTasksFinished();
+    public:
+    MandelbrotGenerator(size_t width = 400, size_t height = 400) : 
+      m_width{width}, m_height{height}, m_bits(width*height)
+    {
+    }
 
-    return bits;
-  }
+    virtual std::vector<bool> generate_picture()
+    {
+      const auto cell_count = m_width*m_height;
+      const auto chunk_count = cell_count/chunk_size+1;
 
+      for(auto i{0u}; i<chunk_count; i++) {
+        const auto min = chunk_size*i;
+        const auto max = std::min(chunk_size*(i+1), cell_count-1);
+        m_tp.addTask(generateMandelbrotSlice(min, max));
+      }
+
+      m_tp.waitForTasksFinished();
+
+      return m_bits;
+    }
+
+    private:
+    static constexpr auto chunk_size = 512lu;
+    size_t m_width{400};
+    size_t m_height{400};
+    ThreadPool m_tp{std::thread::hardware_concurrency()};
+    std::vector<bool> m_bits;
+
+  };
 }
 
 int main() {
@@ -64,7 +85,8 @@ int main() {
   constexpr int height = 768;
 
   const auto startTime = std::clock();
-  const auto bits = mandelbrot::generate_picture(width, height);
+  Impl::MandelbrotGenerator generator{width, height};
+  const auto bits = generator.generate_picture();
   std::cout << "Time: " << (std::clock()-startTime) * (static_cast<double>(1000) / CLOCKS_PER_SEC) << "ms" << std::endl;
   
   const auto pixels = [&bits]() {
