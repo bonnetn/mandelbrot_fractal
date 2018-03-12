@@ -25,7 +25,7 @@ class ThreadPool {
         {
           std::unique_lock<std::mutex> lock{m_tpool.m_tasks_mutex};
           while(m_tpool.m_running && m_tpool.m_tasks.empty())
-            m_tpool.m_cond_var.wait(lock);
+            m_tpool.m_trigger_task.wait(lock);
           
           if(!m_tpool.m_running)
             return;
@@ -35,6 +35,7 @@ class ThreadPool {
 
         }
         job();
+        m_tpool.m_task_finished.notify_all();
       }
     }
   };
@@ -42,7 +43,8 @@ class ThreadPool {
   std::vector<std::thread> m_threads;
   std::queue<std::function<void()>> m_tasks;
   std::mutex m_tasks_mutex;
-  std::condition_variable m_cond_var;
+  std::condition_variable m_trigger_task;
+  std::condition_variable m_task_finished;
   bool m_running{true};
 
   public:
@@ -62,7 +64,7 @@ class ThreadPool {
       std::lock_guard<std::mutex> lock{m_tasks_mutex};
       m_running = false;
     }
-    m_cond_var.notify_all();
+    m_trigger_task.notify_all();
     for(auto &t : m_threads)
       t.join();
   }
@@ -80,7 +82,16 @@ class ThreadPool {
       std::lock_guard<std::mutex> lock{m_tasks_mutex};
       m_tasks.emplace(std::function<void()>(task));
     }
-    m_cond_var.notify_one();
+    m_trigger_task.notify_one();
+  }
+
+  void waitForTasksFinished() 
+  {
+    {
+      std::unique_lock<std::mutex> lock{m_tasks_mutex};
+      while(!m_tasks.empty())
+        m_task_finished.wait(lock);
+    }
   }
 };
 
