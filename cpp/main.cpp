@@ -3,6 +3,7 @@
 #include "lodepng/lodepng.h"
 #include <thread>
 #include <cmath>
+#include <chrono>
 #include "complex.hpp"
 #include "threadpool.hpp"
 
@@ -14,7 +15,7 @@ class MandelbrotGenerator {
 
 namespace Impl {
   template<typename T>
-  bool mandelbrot(const T &c_real, const T &c_imag, const int max_iteration=60) {
+  bool mandelbrot(const T &c_real, const T &c_imag, const int max_iteration=30) {
 
     const complex::Complex<T> c{c_real, c_imag};
     complex::Complex<T> z{c};
@@ -84,10 +85,14 @@ int main() {
   constexpr int width = 1366;
   constexpr int height = 768;
 
-  const auto startTime = std::clock();
+  const auto startTime = std::chrono::steady_clock::now();
   Impl::MandelbrotGenerator generator{width, height};
   const auto bits = generator.generate_picture();
-  std::cout << "Time: " << (std::clock()-startTime) * (static_cast<double>(1000) / CLOCKS_PER_SEC) << "ms" << std::endl;
+  {
+    const auto endTime = std::chrono::steady_clock::now();
+    const auto duration = std::chrono::duration<double, std::milli>(endTime-startTime).count();
+    std::cout << "Time: " <<  duration << "ms" << std::endl;
+  }
   
   const auto pixels = [&bits]() {
     std::vector<unsigned char> pixels;
