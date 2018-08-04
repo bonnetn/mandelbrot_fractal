@@ -1,13 +1,13 @@
 package main
 
 import (
-	"os"
-	"image/png"
-	"time"
 	"fmt"
 	"image"
-	"runtime"
+	"image/png"
 	"math"
+	"os"
+	"runtime"
+	"time"
 )
 
 const (
@@ -42,7 +42,7 @@ func mandelbrot(x, y int) bool {
 	)
 
 	a := complex(0, 0)
-	c := complex((float64(x)-halfWidth)/halfHeight, (float64(y)-halfHeight)/halfHeight)
+	c := complex((float64(x)-halfWidth)/halfHeight*2, (float64(y)-halfHeight)/halfHeight*2)
 
 	for i := 0; i < iterationCount; i++ {
 		//a = a*a + c
