@@ -2,11 +2,9 @@
 #include <ctime>
 #include "lodepng/lodepng.h"
 #include <thread>
-#include <chrono>
 #include <cmath>
 #include "complex.hpp"
 #include "threadpool.hpp"
-#include "slice.hpp"
 
 
 class MandelbrotGenerator {
@@ -30,9 +28,7 @@ namespace Impl {
     return false;
   }
 
-
   class MandelbrotGenerator : public ::MandelbrotGenerator {
-
 
     private:
     auto generateMandelbrotSlice(size_t min, size_t max)
@@ -88,16 +84,10 @@ int main() {
   constexpr int width = 1366;
   constexpr int height = 768;
 
-  const auto startTime = std::chrono::steady_clock::now();
-
+  const auto startTime = std::clock();
   Impl::MandelbrotGenerator generator{width, height};
   const auto bits = generator.generate_picture();
-
-  {
-    const auto endTime = std::chrono::steady_clock::now();
-    const auto duration = std::chrono::duration<double, std::milli>(endTime-startTime).count();
-    std::cout << "Time: " <<  duration << "ms" << std::endl;
-  }
+  std::cout << "Time: " << (std::clock()-startTime) * (static_cast<double>(1000) / CLOCKS_PER_SEC) << "ms" << std::endl;
   
   const auto pixels = [&bits]() {
     std::vector<unsigned char> pixels;
