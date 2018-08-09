@@ -9,20 +9,19 @@ import (
 	"runtime"
 	"time"
 	"mandelbrot/image_rendering/task"
-	"mandelbrot/image_rendering"
 )
 
 const (
-	iterationCount    int = 30
-	width             int = 1366
-	height            int = 768
-	chunkSize         int = 512
-	resultChannelSize int = 16
+	iterationCount int = 30
+	width          int = 1366
+	height         int = 768
+	chunkSize      int = 512
 )
 
 func main() {
 
 	start := time.Now()
+
 
 	// make a queue of tasks (chunks of pixels that need to be rendered)
 	taskChan := make(chan task.Task, 16)
@@ -37,21 +36,23 @@ func main() {
 		close(taskChan)
 	}()
 
+	// Make the image
+	img := image.NewGray(image.Rect(0, 0, width, height))
+
 	// workers that will process the tasks and actually do the rendering in parallel
-	fmt.Printf("Starting %d workers\n", runtime.NumCPU())
-	resultChan := make(chan *image_rendering.Pixel, resultChannelSize)
-	defer close(resultChan)
+	workersNum := runtime.NumCPU()
+	fmt.Printf("Starting %d workers\n", workersNum)
+	stopChan := make(chan bool)
+	defer close(stopChan)
 	go func() {
 		for i := 0; i < runtime.NumCPU(); i++ {
-			go worker(resultChan, taskChan)
+			go worker(img, taskChan, stopChan)
 		}
 	}()
 
-	// write the results of the workers in an image array
-	img := image.NewGray(image.Rect(0, 0, width, height))
-	for i := 0; i < width*height; i++ {
-		p := <-resultChan
-		img.Pix[p.Pos.Y*img.Stride+p.Pos.X] = p.Value
+	// wait for all workers to stop
+	for i := 0; i < workersNum; i++ {
+		<-stopChan
 	}
 
 	elapsed := time.Since(start)
@@ -67,10 +68,11 @@ func main() {
 }
 
 // a worker dequeue tasks, render the pixels and enqueue the rendered pixel in resultChan
-func worker(resultChan chan *image_rendering.Pixel, taskChan chan task.Task) {
+func worker(result *image.Gray, taskChan chan task.Task, stopChan chan bool) {
 	for {
 		t, ok := <-taskChan
 		if !ok {
+			stopChan <- true
 			return
 		}
 
@@ -82,7 +84,7 @@ func worker(resultChan chan *image_rendering.Pixel, taskChan chan task.Task) {
 				v = 255
 			}
 
-			resultChan <- &image_rendering.Pixel{v, *pos}
+			result.Pix[pos.Y*result.Stride+pos.X] = v
 		}
 	}
 }
